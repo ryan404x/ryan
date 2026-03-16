@@ -1,0 +1,856 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan  | System Terminal system updated</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+    <style>
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        
+        /* 3D Realistic Sliding Grid */
+        .bg-grid-3d {
+            position: fixed;
+            inset: 0;
+            perspective: 800px;
+            z-index: 0;
+            overflow: hidden;
+            background: radial-gradient(circle at center, transparent 0%, #000000 80%);
+            pointer-events: none;
+        }
+        .grid-plane {
+            position: absolute;
+            width: 300vw;
+            height: 300vh;
+            left: -100vw;
+            top: -20vh;
+            background-image: 
+                linear-gradient(to right, rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16, 185, 129, 0.1) 1px, transparent 1px);
+            background-size: 4rem 4rem;
+            transform-origin: center top;
+            transform: rotateX(75deg) translateY(0);
+            animation: slide-3d 10s linear infinite;
+        }
+        @keyframes slide-3d {
+            0% { transform: rotateX(75deg) translateY(0); }
+            100% { transform: rotateX(75deg) translateY(4rem); }
+        }
+
+        /* Scan & Glitch Animations */
+        @keyframes float-3d {
+            0%, 100% { transform: perspective(1200px) rotateX(1deg) rotateY(-1deg) translateZ(0) translateY(0); }
+            50% { transform: perspective(1200px) rotateX(-1deg) rotateY(1deg) translateZ(10px) translateY(-8px); }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; opacity: 0; }
+            50% { border-color: #10b981; opacity: 1; }
+        }
+        @keyframes scan-line {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 110%; opacity: 0; }
+        }
+        @keyframes glitch-anim {
+            0% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 2px); }
+            20% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+            40% { clip-path: inset(40% 0 40% 0); transform: translate(-2px, -2px); }
+            60% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 2px); }
+            80% { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 2px); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(0); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .animate-float {
+            animation: float-3d 8s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+        
+        .terminal-cursor::after {
+            content: '█';
+            animation: blink-caret 1s step-end infinite;
+            margin-left: 6px;
+            color: #10b981;
+        }
+
+        .scan-bar {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #10b981, #06b6d4, transparent);
+            box-shadow: 0 0 10px #10b981, 0 0 20px #06b6d4;
+            animation: scan-line 4s linear infinite;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .glitch-text {
+            position: relative;
+        }
+        
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 #06b6d4;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 #10b981;
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+
+        .scanlines {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        .node-pulse {
+            position: relative;
+        }
+        .node-pulse::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid #06b6d4;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        .node-pulse-red::before {
+            border-color: #ef4444;
+        }
+        .node-pulse-green::before {
+            border-color: #10b981;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 2px; }
+    </style>
+</head>
+<body class="antialiased font-[Inter] bg-black text-zinc-400 selection:bg-cyan-500/20 selection:text-cyan-200 relative min-h-screen overflow-hidden scroll-smooth">
+
+    <!-- Hacker Login Screen -->
+    <div id="hacker-login" class="fixed inset-0 z-[100] bg-black flex flex-col justify-center items-center px-6 transition-opacity duration-700">
+        <div class="scanlines fixed inset-0 z-0"></div>
+        <div class="w-full max-w-2xl text-left relative z-10 font-mono text-xs md:text-sm">
+            <div id="boot-sequence" class="text-cyan-400/90 mb-6 space-y-1.5 drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]"></div>
+            
+            <div id="auth-panel" class="hidden">
+                <p class="text-zinc-500 mb-2 font-light">Authentication required. <span class="text-zinc-700 text-xs">(Hint: root)</span></p>
+                <div class="flex items-center gap-2 text-emerald-400">
+                    <span class="shrink-0 text-cyan-500/80">SYSTEM_LOGIN:~$</span>
+                    <input type="password" id="sys-password" class="bg-transparent border-none outline-none flex-1 text-emerald-400 caret-cyan-500 tracking-widest" autocomplete="off">
+                </div>
+                <p id="auth-status" class="mt-4 font-light tracking-tight"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Elements (3D Grid, Matrix, Hacker Silhouette) -->
+    <div class="bg-grid-3d">
+        <div class="grid-plane"></div>
+    </div>
+    <canvas id="matrix-bg" class="fixed inset-0 z-0 opacity-15 pointer-events-none mix-blend-screen"></canvas>
+    <div class="scanlines fixed inset-0 z-0 opacity-40"></div>
+    
+    <!-- Hacker Silhouette Background -->
+    <div class="fixed bottom-0 right-[-10%] w-[80vw] max-w-4xl h-[80vh] opacity-[0.04] pointer-events-none z-0 mix-blend-screen text-cyan-500 flex items-end justify-end translate-y-20">
+        <svg viewBox="0 0 200 200" fill="currentColor" class="w-full h-full drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">
+            <!-- Stylized Hacker/Hoodie Path -->
+            <path d="M100 20 C70 20 50 45 45 80 L35 180 C30 195 45 200 100 200 C155 200 170 195 165 180 L155 80 C150 45 130 20 100 20 Z"></path>
+            <!-- Inner dark void for face -->
+            <path d="M100 40 C80 40 70 60 70 85 C70 110 85 120 100 120 C115 120 130 110 130 85 C130 60 120 40 100 40 Z" fill="#000"></path>
+            <!-- Glowing Eyes/Visor -->
+            <rect x="80" y="75" width="40" height="8" fill="#06b6d4" class="animate-pulse"></rect>
+        </svg>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-cyan-900/20">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="font-mono text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-normal tracking-tighter text-base flex items-center gap-2">
+                <iconify-icon icon="solar:shield-warning-linear" class="text-emerald-400" style="stroke-width: 1.5;"></iconify-icon>
+                SYS_AB
+            </a>
+            <div class="hidden md:flex gap-6 text-xs font-mono text-zinc-500 uppercase tracking-widest">
+                <a href="#about" class="hover:text-cyan-400 transition-colors">[ About ]</a>
+                <a href="#skills" class="hover:text-cyan-400 transition-colors">[ Skills ]</a>
+                <a href="#projects" class="hover:text-cyan-400 transition-colors">[ Projects ]</a>
+                <a href="#terminal" class="hover:text-cyan-400 transition-colors">[ Terminal ]</a>
+            </div>
+            <a href="#contact" class="text-xs font-mono text-cyan-400/90 border border-cyan-500/20 px-3 py-1.5 rounded bg-cyan-950/20 hover:bg-cyan-900/40 hover:border-cyan-400/50 transition-all shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+                &gt; execute_connect
+            </a>
+        </div>
+    </nav>
+
+    <main id="main-content" class="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-24 space-y-32 opacity-0 transition-opacity duration-1000">
+
+        <!-- 1. Hero Section -->
+        <section id="hero" class="min-h-[75vh] flex flex-col justify-center items-center text-center">
+            
+            <div class="w-full max-w-3xl animate-float rounded-xl overflow-hidden relative p-[1px] bg-gradient-to-b from-cyan-500/20 via-zinc-800/20 to-transparent shadow-[0_0_30px_-5px_rgba(6,182,212,0.15)] hover:shadow-[0_0_40px_-5px_rgba(6,182,212,0.25)] transition-shadow duration-500">
+                <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl rounded-xl w-full h-full relative z-10 flex flex-col">
+                    <div class="bg-zinc-950 border-b border-zinc-800/50 px-4 py-2.5 flex items-center justify-between rounded-t-xl">
+                        <div class="flex gap-2 text-xs text-zinc-500 font-mono tracking-tight">
+                            <span>PID: 1337</span>
+                            <span>PORT: 8080</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-zinc-800"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-zinc-800"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-cyan-500/80 shadow-[0_0_8px_#06b6d4]"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 md:p-10 text-left relative min-h-[300px] flex flex-col">
+                        <div class="scan-bar"></div>
+                        
+                        <div class="font-mono text-xs md:text-sm space-y-3">
+                            <p class="text-zinc-500">&gt; Executing system boot...</p>
+                            <p class="text-cyan-400/90 terminal-cursor inline-block" id="hero-typing"></p>
+                            
+                            <div id="hero-static" class="hidden space-y-3 mt-4 text-emerald-400/90 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]">
+                                <p>&gt; USER: root_ryan</p>
+                                <p>&gt; STATUS: <span class="text-cyan-400/90 animate-pulse">system online</span></p>
+                                <p>&gt; ROLE: Developer / Cybersecurity enthusiast</p>
+                                <p class="pt-4 text-zinc-500 font-light">&gt; Welcome To Ryan System </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-10 flex flex-wrap gap-4 text-xs font-mono border-t border-zinc-800/50">
+                            <div class="flex items-center gap-2 text-zinc-400">
+                                <iconify-icon icon="solar:radar-linear" class="animate-spin text-cyan-500/80" style="animation-duration: 4s; stroke-width: 1.5;"></iconify-icon>
+                                Scanning Local Network...
+                            </div>
+                            <div class="flex items-center gap-2 text-emerald-500/80 ml-auto">
+                                <iconify-icon icon="solar:shield-check-linear" style="stroke-width: 1.5;"></iconify-icon>
+                                Firewall: ACTIVE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Interactive Terminal & Map -->
+        <section id="terminal" class="scroll-mt-32">
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <!-- Command Line -->
+                <div class="p-[1px] bg-gradient-to-b from-cyan-500/20 to-transparent rounded-xl shadow-[0_0_20px_-5px_rgba(6,182,212,0.1)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.15)] transition-shadow duration-500">
+                    <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl rounded-xl p-6 flex flex-col h-full border border-zinc-800/50">
+                        <h2 class="text-xs font-mono text-cyan-500/80 border-b border-zinc-800/50 pb-3 mb-4 uppercase tracking-widest flex items-center gap-2">
+                            <iconify-icon icon="solar:programming-linear" style="stroke-width: 1.5;"></iconify-icon>
+                            // Command_Prompt
+                        </h2>
+                        <div id="cmd-history" class="font-mono text-xs text-zinc-400 space-y-2 mb-4 flex-1 max-h-[250px] overflow-y-auto pr-2">
+                            <p class="text-emerald-400/80">Welcome to interactive shell. Type <span class="text-cyan-300">help</span> to list commands.</p>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono text-xs text-cyan-400/90 pt-3 border-t border-zinc-800/50">
+                            <span class="shrink-0 text-emerald-500/80">&gt;</span>
+                            <input type="text" id="cmd-input" class="bg-transparent border-none outline-none flex-1 text-cyan-300 placeholder-zinc-700" placeholder="Type command..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Radar / Map -->
+                <div class="p-[1px] bg-gradient-to-b from-emerald-500/20 to-transparent rounded-xl shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)] hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] transition-shadow duration-500">
+                    <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl rounded-xl p-6 relative overflow-hidden flex flex-col h-full border border-zinc-800/50">
+                        <h2 class="text-xs font-mono text-emerald-500/80 border-b border-zinc-800/50 pb-3 mb-4 uppercase tracking-widest flex items-center gap-2">
+                            <iconify-icon icon="solar:global-linear" style="stroke-width: 1.5;"></iconify-icon>
+                            // Network_Activity
+                        </h2>
+                        
+                        <div class="relative flex-1 min-h-[200px] border border-zinc-800/50 rounded bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:16px_16px]">
+                            <!-- Abstract Nodes -->
+                            <div class="absolute top-[30%] left-[20%] w-1.5 h-1.5 bg-cyan-500 rounded-full node-pulse">
+                                <span class="absolute top-2 -left-4 text-xs font-mono text-cyan-600/70 scale-75 origin-left">USA</span>
+                            </div>
+                            <div class="absolute top-[40%] right-[30%] w-1.5 h-1.5 bg-red-500 rounded-full node-pulse node-pulse-red">
+                                <span class="absolute top-2 -left-4 text-xs font-mono text-red-500/70 scale-75 origin-left">RUSSIA</span>
+                            </div>
+                            <div class="absolute bottom-[30%] right-[20%] w-1.5 h-1.5 bg-emerald-500 rounded-full node-pulse node-pulse-green">
+                                <span class="absolute top-2 -left-4 text-xs font-mono text-emerald-600/70 scale-75 origin-left">CHINA</span>
+                            </div>
+                            
+                            <!-- Connecting Lines (Stylized with SVG) -->
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-30" preserveAspectRatio="none">
+                                <line x1="20%" y1="30%" x2="50%" y2="50%" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 4" class="animate-pulse"></line>
+                                <line x1="70%" y1="40%" x2="50%" y2="50%" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 4" class="animate-pulse"></line>
+                                <line x1="80%" y1="70%" x2="50%" y2="50%" stroke="#10b981" stroke-width="1" stroke-dasharray="2 4" class="animate-pulse"></line>
+                                <circle cx="50%" cy="50%" r="3" fill="#06b6d4" class="node-pulse"></circle>
+                                <text x="50%" y="50%" dx="-10" dy="20" class="text-xs font-mono fill-cyan-400/80 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]">NEPAL</text>
+                            </svg>
+
+                            <!-- Fake Logs Overlay -->
+                            <div class="absolute bottom-2 left-2 right-2 bg-zinc-950/80 backdrop-blur-md border border-zinc-800/50 p-2.5 rounded text-xs font-mono text-cyan-500/60 space-y-1 h-[60px] overflow-hidden" id="live-map-logs">
+                                <p>System secure: 98%</p>
+                                <p class="text-red-500/80">INTRUSION DETECTED - RUSSIA</p>
+                                <p class="text-emerald-500/80">PACKET SCAN - USA</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. About Section -->
+        <section id="about" class="scroll-mt-32">
+            <div class="flex items-center gap-4 mb-8">
+                <h2 class="text-xl font-light text-zinc-300 tracking-tight font-mono uppercase bg-zinc-950 border border-cyan-900/30 px-5 py-2 inline-block shadow-[0_0_15px_rgba(6,182,212,0.05)]">01. Extract_Profile</h2>
+                <div class="h-px bg-gradient-to-r from-cyan-900/30 via-transparent to-transparent flex-1"></div>
+            </div>
+            
+            <div class="p-[1px] bg-gradient-to-r from-cyan-500/20 to-transparent rounded-xl shadow-[0_0_20px_-5px_rgba(6,182,212,0.05)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.1)] transition-shadow duration-500">
+                <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl rounded-xl p-8 md:p-10 font-mono text-xs md:text-sm text-zinc-400 leading-relaxed space-y-5 relative border border-zinc-800/50">
+                    <div class="absolute top-8 right-8 text-cyan-600/20">
+                        <iconify-icon icon="solar:user-id-linear" class="text-5xl" style="stroke-width: 1.5;"></iconify-icon>
+                    </div>
+                    <p class="text-cyan-400/90">&gt; target_info: Ryan</p>
+                    <p class="text-emerald-500/90">&gt; loading_bio...</p>
+                    <div class="pl-5 border-l border-zinc-800/80 space-y-4 text-zinc-400 font-light">
+                        <p>Hello, I'm <span class="text-cyan-300 font-normal drop-shadow-[0_0_8px_rgba(6,182,212,0.2)]">Ryan</span>, a cybersecurity enthusiast and web developer from Nepal.</p>
+                        <p>My journey into technology started with curiosity about how websites work and how hackers exploit vulnerabilities. Instead of using that knowledge for harm, I focused on learning ethical hacking, security testing, and web development.</p>
+                        <p>Over time, I built projects, practiced penetration testing in lab environments, and improved my skills to ensure secure architecture.</p>
+                        <p class="text-cyan-500/60 pt-2">// Goal: Become a professional cybersecurity specialist.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. System Skills -->
+        <section id="skills" class="scroll-mt-32">
+            <div class="flex items-center gap-4 mb-8">
+                <h2 class="text-xl font-light text-zinc-300 tracking-tight font-mono uppercase bg-zinc-950 border border-emerald-900/30 px-5 py-2 inline-block shadow-[0_0_15px_rgba(16,185,129,0.05)]">02. System_Capabilities</h2>
+                <div class="h-px bg-gradient-to-r from-emerald-900/30 via-transparent to-transparent flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 p-[1px] bg-gradient-to-b from-emerald-500/20 to-transparent rounded-xl shadow-[0_0_20px_-5px_rgba(16,185,129,0.05)] hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.1)] transition-shadow duration-500">
+                <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl p-8 rounded-xl grid md:grid-cols-2 gap-x-8 gap-y-6 md:col-span-2 border border-zinc-800/50">
+                    <!-- Skill 1 -->
+                    <div>
+                        <div class="flex justify-between font-mono text-xs text-cyan-400/90 mb-2">
+                            <span>&gt; HTML</span><span class="text-cyan-600/70">sys.lvl(95%)</span>
+                        </div>
+                        <div class="h-1 bg-black border border-zinc-800/80 overflow-hidden relative rounded-full">
+                            <div class="h-full bg-cyan-500/80 shadow-[0_0_8px_#06b6d4] w-[95%] relative rounded-full"></div>
+                        </div>
+                    </div>
+                    <!-- Skill 2 -->
+                    <div>
+                        <div class="flex justify-between font-mono text-xs text-emerald-400/90 mb-2">
+                            <span>&gt; CSS</span><span class="text-emerald-600/70">sys.lvl(90%)</span>
+                        </div>
+                        <div class="h-1 bg-black border border-zinc-800/80 overflow-hidden relative rounded-full">
+                            <div class="h-full bg-emerald-500/80 shadow-[0_0_8px_#10b981] w-[90%] relative rounded-full"></div>
+                        </div>
+                    </div>
+                    <!-- Skill 3 -->
+                    <div>
+                        <div class="flex justify-between font-mono text-xs text-cyan-400/90 mb-2">
+                            <span>&gt; JavaScript</span><span class="text-cyan-600/70">sys.lvl(80%)</span>
+                        </div>
+                        <div class="h-1 bg-black border border-zinc-800/80 overflow-hidden relative rounded-full">
+                            <div class="h-full bg-cyan-500/80 shadow-[0_0_8px_#06b6d4] w-[80%] relative rounded-full"></div>
+                        </div>
+                    </div>
+                    <!-- Skill 4 -->
+                    <div>
+                        <div class="flex justify-between font-mono text-xs text-emerald-400/90 mb-2">
+                            <span>&gt; Python</span><span class="text-emerald-600/70">sys.lvl(70%)</span>
+                        </div>
+                        <div class="h-1 bg-black border border-zinc-800/80 overflow-hidden relative rounded-full">
+                            <div class="h-full bg-emerald-500/80 shadow-[0_0_8px_#10b981] w-[70%] relative rounded-full"></div>
+                        </div>
+                    </div>
+                    <!-- Skill 5 (Full Width) -->
+                    <div class="md:col-span-2 pt-4 border-t border-zinc-800/50">
+                        <div class="flex justify-between font-mono text-xs text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-2">
+                            <span class="flex items-center gap-2 text-emerald-400/90"><iconify-icon icon="solar:shield-warning-linear" class="text-emerald-400"></iconify-icon> Cybersecurity</span><span class="text-cyan-500/80 animate-pulse drop-shadow-[0_0_5px_rgba(6,182,212,0.3)]">Scanning... 85%</span>
+                        </div>
+                        <div class="h-1.5 bg-black border border-zinc-800/80 overflow-hidden relative rounded-full">
+                            <div class="h-full bg-gradient-to-r from-emerald-500/80 to-cyan-400/80 shadow-[0_0_15px_#06b6d4] w-[85%] relative rounded-full">
+                                <div class="absolute right-0 top-0 bottom-0 w-4 bg-white/40 animate-pulse blur-[1px]"></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-2.5 font-mono text-xs text-zinc-500 uppercase">
+                            <span class="bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded hover:border-cyan-500/50 hover:text-cyan-400/90 transition-colors cursor-default">&gt; Ethical Hacking</span>
+                            <span class="bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded hover:border-emerald-500/50 hover:text-emerald-400/90 transition-colors cursor-default">&gt; Vulnerability Scan</span>
+                            <span class="bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded hover:border-cyan-500/50 hover:text-cyan-400/90 transition-colors cursor-default">&gt; Web Sec</span>
+                            <span class="bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded hover:border-emerald-500/50 hover:text-emerald-400/90 transition-colors cursor-default">&gt; OSINT</span>
+                            <span class="bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded hover:border-cyan-500/50 hover:text-cyan-400/90 transition-colors cursor-default">&gt; Bug Bounty</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Projects -->
+        <section id="projects" class="scroll-mt-32">
+            <div class="flex items-center gap-4 mb-8">
+                <h2 class="text-xl font-light text-zinc-300 tracking-tight font-mono uppercase bg-zinc-950 border border-cyan-900/30 px-5 py-2 inline-block shadow-[0_0_15px_rgba(6,182,212,0.05)]">03. Executed_Modules</h2>
+                <div class="h-px bg-gradient-to-r from-cyan-900/30 via-transparent to-transparent flex-1"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Project 1 (Emerald) -->
+                <div class="group relative bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/40 rounded-xl p-6 overflow-hidden transition-all duration-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.05)] hover:-translate-y-1">
+                    <div class="scan-bar hidden group-hover:block bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_15px_#10b981]"></div>
+                    <div class="flex justify-between items-start mb-5">
+                        <iconify-icon icon="solar:folder-with-files-linear" class="text-3xl text-zinc-700 group-hover:text-emerald-400/80 transition-colors drop-shadow-[0_0_5px_rgba(16,185,129,0)] group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" style="stroke-width: 1.5;"></iconify-icon>
+                        <span class="text-xs font-mono text-zinc-700 group-hover:text-emerald-500/80 transition-colors">ID: SEC_LOG</span>
+                    </div>
+                    <h3 class="text-sm font-mono text-zinc-200 group-hover:text-emerald-300 mb-3 tracking-tight transition-colors">&gt; Secure Login System</h3>
+                    <p class="text-xs font-mono text-zinc-500 mb-6 line-clamp-3 font-light leading-relaxed">
+                        Authentication and password hashing implementation to protect user credentials against db leaks. High-end encryption protocols integrated.
+                    </p>
+                    <div class="flex flex-wrap gap-3 font-mono text-xs text-zinc-600 group-hover:text-emerald-500/60 transition-colors mt-auto pt-4 border-t border-zinc-800/50">
+                        <span>[HTML]</span><span>[JS]</span><span>[NODE]</span>
+                    </div>
+                </div>
+
+                <!-- Project 2 (Cyan) -->
+                <div class="group relative bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/40 rounded-xl p-6 overflow-hidden transition-all duration-500 hover:shadow-[0_0_25px_rgba(6,182,212,0.05)] hover:-translate-y-1">
+                    <div class="scan-bar hidden group-hover:block bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent shadow-[0_0_15px_#06b6d4]"></div>
+                    <div class="flex justify-between items-start mb-5">
+                        <iconify-icon icon="solar:monitor-smartphone-linear" class="text-3xl text-zinc-700 group-hover:text-cyan-400/80 transition-colors drop-shadow-[0_0_5px_rgba(6,182,212,0)] group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" style="stroke-width: 1.5;"></iconify-icon>
+                        <span class="text-xs font-mono text-zinc-700 group-hover:text-cyan-500/80 transition-colors">ID: PRT_WEB</span>
+                    </div>
+                    <h3 class="text-sm font-mono text-zinc-200 group-hover:text-cyan-300 mb-3 tracking-tight transition-colors">&gt; Portfolio System</h3>
+                    <p class="text-xs font-mono text-zinc-500 mb-6 font-light leading-relaxed">
+                        Responsive portfolio interface with clean UI and fast loading parameters. 3D CSS rendering and high-res matrix simulations.
+                    </p>
+                    <div class="flex flex-wrap gap-3 font-mono text-xs text-zinc-600 group-hover:text-cyan-500/60 transition-colors mt-auto pt-4 border-t border-zinc-800/50">
+                        <span>[TAILWIND]</span><span>[HTML]</span><span>[JS]</span>
+                    </div>
+                </div>
+
+                <!-- Project 3 (Red/Danger) -->
+                <div class="group relative bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-xl border border-zinc-800 hover:border-red-500/40 rounded-xl p-6 overflow-hidden transition-all duration-500 hover:shadow-[0_0_25px_rgba(239,68,68,0.05)] hover:-translate-y-1">
+                    <div class="scan-bar hidden group-hover:block !bg-gradient-to-r !from-transparent !via-red-500/50 !to-transparent !shadow-[0_0_15px_#ef4444]"></div>
+                    <div class="flex justify-between items-start mb-5">
+                        <iconify-icon icon="solar:bug-minimalistic-linear" class="text-3xl text-zinc-700 group-hover:text-red-500/80 transition-colors drop-shadow-[0_0_5px_rgba(239,68,68,0)] group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]" style="stroke-width: 1.5;"></iconify-icon>
+                        <span class="text-xs font-mono text-zinc-700 group-hover:text-red-500/80 animate-pulse transition-colors">DANGER: HIGH</span>
+                    </div>
+                    <h3 class="text-sm font-mono text-zinc-200 group-hover:text-red-400 mb-3 tracking-tight transition-colors">&gt; Vuln Scanner</h3>
+                    <p class="text-xs font-mono text-zinc-500 mb-6 font-light leading-relaxed">
+                        Automated Python tool checking targets for common misconfigurations and low-hanging fruit. Rapid footprinting and recon.
+                    </p>
+                    <div class="flex flex-wrap gap-3 font-mono text-xs text-zinc-600 group-hover:text-red-500/60 transition-colors mt-auto pt-4 border-t border-zinc-800/50">
+                        <span>[PYTHON]</span><span>[REQ]</span><span>[SEC]</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Contact Terminal -->
+        <section id="contact" class="scroll-mt-32 max-w-2xl mx-auto pb-20">
+            <div class="p-[1px] bg-gradient-to-b from-cyan-500/20 to-transparent rounded-xl shadow-[0_0_20px_-5px_rgba(6,182,212,0.05)] hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.1)] transition-shadow duration-500">
+                <div class="bg-gradient-to-b from-black/90 to-zinc-950/95 backdrop-blur-2xl rounded-xl overflow-hidden h-full border border-zinc-800/50">
+                    <div class="bg-zinc-950 border-b border-zinc-800/50 px-5 py-3 flex items-center justify-between">
+                        <span class="text-xs text-cyan-500/80 font-mono tracking-widest flex items-center gap-2">
+                            <iconify-icon icon="solar:lock-keyhole-linear" style="stroke-width: 1.5;"></iconify-icon>
+                            SECURE_COMM_CHANNEL
+                        </span>
+                        <div class="w-1.5 h-1.5 rounded-full bg-cyan-500/80 animate-pulse shadow-[0_0_8px_#06b6d4]"></div>
+                    </div>
+                    <div class="p-8 md:p-10">
+                        <div class="font-mono text-xs text-emerald-400/80 mb-6 bg-zinc-950/50 border border-zinc-800 p-3 rounded shadow-inner">
+                            &gt; init_message_protocol: <span class="text-cyan-300/80">Awaiting encrypted payload...</span>
+                        </div>
+                        
+                        <form onsubmit="event.preventDefault(); playSuccessSound(); this.innerHTML='&lt;div class=\'text-cyan-400/90 font-mono text-sm h-48 flex items-center justify-center flex-col gap-4 border border-zinc-800 bg-zinc-950/50 rounded drop-shadow-[0_0_10px_rgba(6,182,212,0.1)]\'&gt;&lt;iconify-icon icon=\'solar:check-circle-linear\' class=\'text-4xl\'&gt;&lt;/iconify-icon&gt;[+] Payload encrypted and transmitted successfully.&lt;/div&gt;';" class="space-y-5">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-mono text-zinc-500 uppercase tracking-widest">&gt; set_sender_name</label>
+                                <input type="text" required="" class="w-full bg-zinc-950/50 border border-zinc-800 focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.05)] rounded p-3 text-cyan-300 outline-none font-mono text-xs transition-all placeholder:text-zinc-700" placeholder="guest_user">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-mono text-zinc-500 uppercase tracking-widest">&gt; set_sender_id (email)</label>
+                                <input type="email" required="" class="w-full bg-zinc-950/50 border border-zinc-800 focus:border-emerald-500/50 focus:shadow-[0_0_15px_rgba(16,185,129,0.05)] rounded p-3 text-emerald-300 outline-none font-mono text-xs transition-all placeholder:text-zinc-700" placeholder="anon@domain.com">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-mono text-zinc-500 uppercase tracking-widest">&gt; write_payload</label>
+                                <textarea required="" rows="4" class="w-full bg-zinc-950/50 border border-zinc-800 focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.05)] rounded p-3 text-cyan-300 outline-none font-mono text-xs transition-all resize-none placeholder:text-zinc-700" placeholder="Enter strictly classified message..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-zinc-900/50 hover:bg-zinc-800/50 border border-zinc-800 hover:border-cyan-500/40 text-cyan-400/80 hover:text-cyan-300 font-mono text-xs py-3.5 rounded uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(6,182,212,0.02)] hover:shadow-[0_0_20px_rgba(6,182,212,0.05)] mt-2">
+                                &gt; transmit_data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-zinc-800/50 bg-black py-8 text-center relative z-10">
+        <p class="font-mono text-xs text-zinc-600 mb-2 font-light">DESIGNED_BY: Aryan Bhattarai</p>
+        <p class="font-mono text-xs text-cyan-800/80 drop-shadow-[0_0_2px_rgba(6,182,212,0.2)]">CONNECTION_TERMINATED(0);</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Enhanced Web Audio API Sound System (Mechanical Keyboard)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let humOscillator;
+        let humGain;
+        let noiseBuffer;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+                
+                // Background futuristic hum
+                humOscillator = audioCtx.createOscillator();
+                humGain = audioCtx.createGain();
+                humOscillator.type = 'sine';
+                humOscillator.frequency.value = 50; // Deep hum
+                humGain.gain.value = 0.015; // Very subtle
+                humOscillator.connect(humGain);
+                humGain.connect(audioCtx.destination);
+                humOscillator.start();
+
+                // Generate white noise buffer for realistic keyboard clack
+                const bufferSize = audioCtx.sampleRate * 0.05; // 50ms
+                noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playKeySound() {
+            if (!audioCtx || !noiseBuffer) return;
+            
+            // 1. The high-frequency mechanical "click"
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+            
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            // Slight pitch variation per key for realism
+            noiseFilter.frequency.value = 1200 + Math.random() * 600; 
+            
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+            
+            noiseSource.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseSource.start();
+            
+            // 2. The low-frequency switch "thump"
+            const osc = audioCtx.createOscillator();
+            const oscGain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.02);
+            oscGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            oscGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+            
+            osc.connect(oscGain);
+            oscGain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.02);
+        }
+
+        function playSuccessSound() {
+            if (!audioCtx) return;
+            const playTone = (freq, time, dur) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0.05, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(time);
+                osc.stop(time + dur);
+            };
+            const t = audioCtx.currentTime;
+            playTone(880, t, 0.1);
+            playTone(1318.51, t + 0.1, 0.3);
+        }
+
+        function playErrorSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // Initialization for Audio Context
+            document.addEventListener('click', initAudio, { once: true });
+            document.addEventListener('keydown', (e) => {
+                initAudio();
+                if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter') {
+                    playKeySound();
+                }
+            });
+
+            // --- HACKER LOGIN SEQUENCE ---
+            const overlay = document.getElementById('hacker-login');
+            const bootText = document.getElementById('boot-sequence');
+            const authPanel = document.getElementById('auth-panel');
+            const sysPass = document.getElementById('sys-password');
+            const authStatus = document.getElementById('auth-status');
+            const mainContent = document.getElementById('main-content');
+
+            const bootLines = [
+                "Initializing ultra-4k system display...",
+                "Loading 3D environmental grids...",
+                "Bypassing perimeter firewall constraints...",
+                "Decrypting classified bio-data..."
+            ];
+
+            let lineIndex = 0;
+
+            function typeBootLine(text, callback) {
+                const p = document.createElement('p');
+                bootText.appendChild(p);
+                let charIndex = 0;
+                
+                const interval = setInterval(() => {
+                    p.textContent += text.charAt(charIndex);
+                    charIndex++;
+                    playKeySound(); // Sound per character
+                    if (charIndex >= text.length) {
+                        clearInterval(interval);
+                        setTimeout(callback, 300); // Wait before next line
+                    }
+                }, 20); // Slightly faster typing for realism
+            }
+
+            function processBoot() {
+                if (lineIndex < bootLines.length) {
+                    typeBootLine(bootLines[lineIndex], () => {
+                        lineIndex++;
+                        processBoot();
+                    });
+                } else {
+                    setTimeout(() => {
+                        authPanel.classList.remove('hidden');
+                        sysPass.focus();
+                    }, 500);
+                }
+            }
+
+            // Start boot sequence
+            setTimeout(processBoot, 600);
+
+            // Handle Password Input
+            sysPass.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const val = sysPass.value.trim().toLowerCase();
+                    if (val === 'root' || val === 'ryan') {
+                        playSuccessSound();
+                        authStatus.textContent = 'ACCESS GRANTED';
+                        authStatus.className = 'mt-4 text-cyan-400 font-medium animate-pulse drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]';
+                        authStatus.setAttribute('data-text', 'ACCESS GRANTED');
+                        
+                        setTimeout(() => {
+                            overlay.style.opacity = '0';
+                            document.body.classList.remove('overflow-hidden');
+                            setTimeout(() => {
+                                overlay.remove();
+                                mainContent.style.opacity = '1';
+                                startHeroTyping();
+                                initMatrix();
+                            }, 700);
+                        }, 1000);
+                    } else {
+                        playErrorSound();
+                        authStatus.textContent = 'ACCESS DENIED';
+                        authStatus.className = 'mt-4 text-red-500 font-medium glitch-text drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]';
+                        authStatus.setAttribute('data-text', 'ACCESS DENIED');
+                        sysPass.value = '';
+                        setTimeout(() => {
+                            authStatus.textContent = '';
+                            authStatus.className = 'mt-4 font-light tracking-tight';
+                        }, 2000);
+                    }
+                }
+            });
+
+            // --- HERO TYPING ---
+            function startHeroTyping() {
+                const txt = "> Compiling 3D assets and user data...";
+                const elem = document.getElementById('hero-typing');
+                let i = 0;
+                const int = setInterval(() => {
+                    elem.textContent += txt.charAt(i);
+                    playKeySound();
+                    i++;
+                    if(i >= txt.length) {
+                        clearInterval(int);
+                        playSuccessSound();
+                        setTimeout(() => {
+                            elem.classList.add('hidden');
+                            document.getElementById('hero-static').classList.remove('hidden');
+                        }, 400);
+                    }
+                }, 30);
+            }
+
+            // --- INTERACTIVE TERMINAL ---
+            const cmdInput = document.getElementById('cmd-input');
+            const cmdHistory = document.getElementById('cmd-history');
+
+            const commands = {
+                'whoami': 'Ryan  – Developer & Tech Enthusiast',
+                'skills': 'HTML\nCSS\nJavaScript\nPython\nCybersecurity',
+                'projects': '1. Secure Login System\n2. Portfolio Website\n3. Vulnerability Scanner',
+                'contact': 'Secure channel active below. Or init protocol via standard means.',
+                'help': 'Available commands:\n- whoami\n- skills\n- projects\n- contact\n- clear'
+            };
+
+            cmdInput.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') {
+                    const val = cmdInput.value.trim().toLowerCase();
+                    if(!val) return;
+                    
+                    cmdInput.value = '';
+                    
+                    if(val === 'clear') {
+                        cmdHistory.innerHTML = '';
+                        playSuccessSound();
+                        return;
+                    }
+
+                    // Append user command
+                    const reqElem = document.createElement('div');
+                    reqElem.innerHTML = `<span class="text-zinc-600">></span> <span class="text-emerald-300/90">${val}</span>`;
+                    cmdHistory.appendChild(reqElem);
+
+                    // Append response
+                    const resElem = document.createElement('div');
+                    resElem.className = 'whitespace-pre-wrap pl-3 border-l border-zinc-800 mb-3 text-cyan-200/80 font-light';
+                    
+                    if(commands[val]) {
+                        resElem.textContent = commands[val];
+                        playSuccessSound();
+                    } else {
+                        resElem.className = 'text-red-400/80 mb-3 pl-3 border-l border-red-900/30';
+                        resElem.textContent = `Command not found: ${val}`;
+                        playErrorSound();
+                    }
+                    cmdHistory.appendChild(resElem);
+                    cmdHistory.scrollTop = cmdHistory.scrollHeight;
+                }
+            });
+
+            // Focus terminal input when clicking panel
+            document.getElementById('cmd-history').parentElement.addEventListener('click', () => {
+                cmdInput.focus();
+            });
+
+            // --- FAKE LOGS UPDATER ---
+            const mapLogs = document.getElementById('live-map-logs');
+            const fakeLogs = [
+                "Scanning port 80...",
+                "System security: 98.4%",
+                "Packet routed via proxy cascade...",
+                "<span class='text-red-400/80'>FIREWALL ALERT - CHINA</span>",
+                "Encrypting data stream (AES-256)...",
+                "Node connection stable.",
+                "Checking zero-day vulnerabilities...",
+                "<span class='text-red-500/80 font-medium'>INTRUSION DETECTED - RUSSIA</span>",
+                "Ping response: 12ms",
+                "<span class='text-emerald-400/80'>PACKET SCAN - USA</span>"
+            ];
+            
+            setInterval(() => {
+                if(!overlay.parentNode) { 
+                    const log = fakeLogs[Math.floor(Math.random() * fakeLogs.length)];
+                    const p = document.createElement('p');
+                    p.innerHTML = log;
+                    mapLogs.appendChild(p);
+                    if(mapLogs.children.length > 5) {
+                        mapLogs.removeChild(mapLogs.firstChild);
+                    }
+                }
+            }, 2500);
+
+            // --- MATRIX RAIN JS ---
+            function initMatrix() {
+                const canvas = document.getElementById('matrix-bg');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+                const baseSize = 14; 
+                const columns = canvas.width / baseSize;
+                const drops = Array(Math.floor(columns)).fill(1);
+                
+                function draw() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.font = baseSize + 'px monospace';
+                    
+                    for (let i = 0; i < drops.length; i++) {
+                        ctx.fillStyle = Math.random() > 0.5 ? '#10b981' : '#06b6d4';
+                        
+                        const text = letters[Math.floor(Math.random() * letters.length)];
+                        ctx.fillText(text, i * baseSize, drops[i] * baseSize);
+                        
+                        if (drops[i] * baseSize > canvas.height && Math.random() > 0.975) {
+                            drops[i] = 0;
+                        }
+                        drops[i]++;
+                    }
+                }
+                
+                setInterval(draw, 50);
+
+                window.addEventListener('resize', () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
+            }
+        });
+    </script>
+
+
+</body></html>
